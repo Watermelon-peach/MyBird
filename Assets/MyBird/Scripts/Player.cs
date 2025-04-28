@@ -21,6 +21,10 @@ namespace MyBird
         //이동
         //이동속도 - Translate
         [SerializeField]private float moveSpeed = 5f;
+
+        //대기
+        //아래로 떨어지지 않을만큼의 새를 받히는 힘
+        [SerializeField] private float readyForce = 1f;
         #endregion
 
         #region Unity Event Method
@@ -35,8 +39,16 @@ namespace MyBird
         // Update is called once per frame
         void Update()
         {
+
             //인풋처리
             InputBird();
+
+            if (!GameManager.IsStart)
+            {
+                //버드 대기
+                ReadyBird();
+                return;
+            }
 
             //버드 회전
             RotateBird();
@@ -54,6 +66,29 @@ namespace MyBird
                 keyJump = false;
             }
         }
+
+        private void OnCollisionEnter2D(Collision2D collision)
+        {
+            //collision : 부딛힌 콜라이더 정보를 가지고 있다
+            if (collision.gameObject.tag == "Ground")
+            {
+                Debug.Log("그라운드 충돌");
+            }
+            else if (collision.gameObject.tag == "Pipe")
+            {
+                Debug.Log("기둥 충돌");
+            }
+            
+        }
+
+        private void OnTriggerEnter2D(Collider2D collision)
+        {
+            //collision : 부딛힌 콜라이더 정보를 가지고 있다
+            if (collision.gameObject.tag == "Point")
+            {
+                Debug.Log("점수 획득");
+            }
+        }
         #endregion
 
         #region Custom Method
@@ -63,6 +98,12 @@ namespace MyBird
             //스페이스키 또는 마우스 왼클릭 입력받기
             keyJump |= Input.GetKeyDown(KeyCode.Space);
             keyJump |= Input.GetMouseButtonDown(0);
+
+            //게임 start
+            if (!GameManager.IsStart && keyJump)
+            {
+                GameManager.IsStart = true;
+            }
         }
 
         //버드 점프하기
@@ -92,9 +133,21 @@ namespace MyBird
             transform.eulerAngles = birdRotation;
         }
 
+        //버드 대기
+        void ReadyBird()
+        {
+            //아래쪽에서 떨어지지 않도록 위쪽으로 힘을 준다
+            if (rb2D.linearVelocity.y < 0f)
+            {
+                rb2D.linearVelocity = Vector2.up * readyForce;
+            }
+            
+        }
+
         //버드 이동하기
         void MoveBird()
         {
+            if (!GameManager.IsStart) return;
             transform.Translate(Vector2.right * moveSpeed * Time.deltaTime, Space.World);
         }
         #endregion
