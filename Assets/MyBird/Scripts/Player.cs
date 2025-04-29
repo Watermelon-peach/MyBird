@@ -1,4 +1,5 @@
 using UnityEngine;
+using TMPro;
 
 namespace MyBird
 {
@@ -6,7 +7,9 @@ namespace MyBird
     {
         #region Variables
         private Rigidbody2D rb2D;
-
+        //애니메이터
+        public Animator animator;
+       
         //점프
         private bool keyJump = false;       //점프 키 인풋 체크
         [SerializeField]private float jumpForce = 5f;       //윗방향으로 주는 힘
@@ -25,6 +28,10 @@ namespace MyBird
         //대기
         //아래로 떨어지지 않을만큼의 새를 받히는 힘
         [SerializeField] private float readyForce = 1f;
+
+        //UI
+        public GameObject readyUI;
+        public GameObject resultUI;
         #endregion
 
         #region Unity Event Method
@@ -42,6 +49,7 @@ namespace MyBird
 
             //인풋처리
             InputBird();
+            
 
             if (!GameManager.IsStart)
             {
@@ -59,6 +67,8 @@ namespace MyBird
 
         private void FixedUpdate()
         {
+            if (GameManager.IsDeath)
+                return;
             if (keyJump)
             {
                 Debug.Log("점프");
@@ -72,11 +82,7 @@ namespace MyBird
             //collision : 부딛힌 콜라이더 정보를 가지고 있다
             if (collision.gameObject.tag == "Ground")
             {
-                Debug.Log("그라운드 충돌");
-            }
-            else if (collision.gameObject.tag == "Pipe")
-            {
-                Debug.Log("기둥 충돌");
+                DieBird();
             }
             
         }
@@ -86,7 +92,14 @@ namespace MyBird
             //collision : 부딛힌 콜라이더 정보를 가지고 있다
             if (collision.gameObject.tag == "Point")
             {
-                Debug.Log("점수 획득");
+                GameManager.Score++;
+                
+                Debug.Log($"점수 획득: {GameManager.Score}");
+            }
+
+            if (collision.gameObject.tag == "Pipe")
+            {
+                DieBird();
             }
         }
         #endregion
@@ -102,7 +115,7 @@ namespace MyBird
             //게임 start
             if (!GameManager.IsStart && keyJump)
             {
-                GameManager.IsStart = true;
+                StartMove();
             }
         }
 
@@ -147,8 +160,33 @@ namespace MyBird
         //버드 이동하기
         void MoveBird()
         {
-            if (!GameManager.IsStart) return;
+            if (!GameManager.IsStart || GameManager.IsDeath)
+                return;
             transform.Translate(Vector2.right * moveSpeed * Time.deltaTime, Space.World);
+        }
+
+        //버드 죽음
+        void DieBird()
+        {
+            //두번 죽음 체크
+            if (GameManager.IsDeath)
+                return;
+
+            GameManager.IsDeath = true;
+            animator.enabled = false;
+            rb2D.linearVelocity = Vector2.zero;
+
+            //VFX, SFX
+
+            //UI
+            resultUI.SetActive(true);
+        }
+
+        //버드 이동 시작
+        void StartMove()
+        {
+            GameManager.IsStart = true;
+            readyUI.SetActive(false);
         }
         #endregion
     }
