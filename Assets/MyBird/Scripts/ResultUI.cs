@@ -34,10 +34,12 @@ namespace MyBird
         }
         private void Update()
         {
+#if UNITY_EDITOR
             if (Input.GetKeyDown(KeyCode.Space))
             {
                 Retry();
             }
+#endif
         }
 
 

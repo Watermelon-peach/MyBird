@@ -7,6 +7,7 @@ namespace MyBird
     {
         #region Variables
         private Rigidbody2D rb2D;
+        private AudioSource audioSource;
         //애니메이터
         public Animator animator;
        
@@ -40,6 +41,7 @@ namespace MyBird
         {
             //참조
             rb2D = GetComponent<Rigidbody2D>();
+            audioSource = GetComponent<AudioSource>();
 
         }
 
@@ -71,7 +73,6 @@ namespace MyBird
                 return;
             if (keyJump)
             {
-                Debug.Log("점프");
                 JumpBird();
                 keyJump = false;
             }
@@ -93,8 +94,17 @@ namespace MyBird
             if (collision.gameObject.tag == "Point")
             {
                 GameManager.Score++;
-                
-                Debug.Log($"점수 획득: {GameManager.Score}");
+
+                //10개씩 통과할 때마다 난이도 조정
+                /*if (GameManager.Score % 10 == 0)
+                {
+                    Debug.Log("어려워집니다!");
+                }*/
+
+                //사운드 플레이
+                audioSource.Play();
+
+                //Debug.Log($"점수 획득: {GameManager.Score}");
             }
 
             if (collision.gameObject.tag == "Pipe")
@@ -108,9 +118,23 @@ namespace MyBird
         //인풋처리
         void InputBird()
         {
+#if UNITY_EDITOR
             //스페이스키 또는 마우스 왼클릭 입력받기
             keyJump |= Input.GetKeyDown(KeyCode.Space);
             keyJump |= Input.GetMouseButtonDown(0);
+#else
+            //터치 인풋 처리
+            if (Input.touchCount > 0)
+            {
+                //첫번째 터치만 처리
+                Touch touch = Input.GetTouch(0);
+
+                if(touch.phase == TouchPhase.Began)
+                {
+                    keyJump |= true;
+                }
+            }
+#endif
 
             //게임 start
             if (!GameManager.IsStart && keyJump)
@@ -188,6 +212,6 @@ namespace MyBird
             GameManager.IsStart = true;
             readyUI.SetActive(false);
         }
-        #endregion
+#endregion
     }
 }

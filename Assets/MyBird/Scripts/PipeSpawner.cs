@@ -17,11 +17,10 @@ namespace MyBird
         [SerializeField] private float maxSpawnY = 3.3f;
         [SerializeField] private float minSpawnY = -1.6f;
 
-        //스폰 간격
+        //스폰 간격     0.95~1.05 -> 0.90~1.00 -> 0.85~0.95
         [SerializeField] private float maxSpawnTime = 1.05f;
         [SerializeField] private float minSpawnTime = 0.95f;
-
-
+        [SerializeField] private float levelingTime = 0.05f;
         #endregion
 
         //1초마다 기둥 하나씩 생성, 게임 시작시(IsStart == true)
@@ -32,6 +31,8 @@ namespace MyBird
 
         private void Update()
         {
+            
+
             if (!GameManager.IsStart || GameManager.IsDeath) return;
 
             timeCount += Time.deltaTime;
@@ -41,8 +42,11 @@ namespace MyBird
                 SpawnPipe();
                 //타이머 초기화
                 timeCount = 0f;
-                pipeTimer = Random.Range(minSpawnTime, maxSpawnTime);
+
+                float levelingValue = (GameManager.Score / 10) * levelingTime;
+                pipeTimer = Random.Range(minSpawnTime-levelingValue, maxSpawnTime - levelingValue);
             }
+
         }
 
         //기둥 생성

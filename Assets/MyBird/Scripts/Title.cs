@@ -14,15 +14,22 @@ namespace MyBird
 
         private void Update()
         {
+#if UNITY_EDITOR
             if (Input.GetKeyDown(KeyCode.P))
             {
                 ResetSaveData();
             }
+#endif
         }
 
         public void Play()
         {
             fader.FadeTo(sceneToLoad);
+        }
+
+        public void Quit()
+        {
+            Application.Quit();
         }
 
         void ResetSaveData()
@@ -31,7 +38,7 @@ namespace MyBird
                 return;
 
             PlayerPrefs.DeleteAll();
-            Debug.Log("초기화 됐지롱");
+            //Debug.Log("초기화 됐지롱");
         }
     }
 
